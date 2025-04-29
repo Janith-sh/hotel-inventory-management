@@ -1,58 +1,83 @@
-import React from 'react';  
-import { Link } from 'react-router-dom'; // Assuming you are using React Router for navigation  
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  MdInventory,
+  MdStackedLineChart,
+  MdShoppingCart,
+  MdLocalShipping,
+  MdTrendingUp,
+  MdWarning,
+  MdAnalytics,
+  MdPeople,
+  MdLogout 
+} from 'react-icons/md';
 
-const Header = ({ userRole, onLogout }) => {  
-  return (  
-    <header className="bg-[#007BFF] p-4 shadow-md">  
-      <div className="container mx-auto flex justify-between items-center">  
-        <h1 className="text-white text-2xl font-bold">Inventory Management System</h1>  
-        <nav>  
-          <ul className="flex space-x-6">  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/">Login</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/dashboard">Dashboard</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/inventory">Inventory Management</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/stock-levels">Stock Level Monitoring</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/orders">Order Management</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/delivery">Delivery & Reconciliation</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/usage-tracking">Inventory Usage Tracking</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/wastage-loss">Wastage & Loss Management</Link>  
-            </li>  
-            <li>  
-              <Link className="text-white hover:text-[#FFD700]" to="/reports">Reports & Analytics</Link>  
-            </li>  
-            {userRole === 'Admin' && (  
-              <li>  
-                <Link className="text-white hover:text-[#FFD700]" to="/user-management">User Management</Link>  
-              </li>  
-            )}  
-            <li>  
-              <button   
-                className="bg-[#28A745] text-white px-4 py-2 rounded hover:bg-[#218838]"   
-                onClick={onLogout}  
-              >  
-                Logout  
-              </button>  
-            </li>  
-          </ul>  
-        </nav>  
-      </div>  
-    </header>  
-  );  
-};  
+const Header = ({ userRole, onLogout }) => {
+  const location = useLocation();
 
-export default Header;  
+  return (
+    <header className="bg-gradient-to-r from-[#1a237e] to-[#283593] p-4 shadow-lg">
+      <div className="container mx-auto flex justify-between items-center">
+        {/* Logo Section */}
+        <div className="flex items-center gap-2">
+          <MdInventory className="text-white text-3xl" />
+          <div className="text-white font-bold leading-tight">
+            <div className="text-sm">Inventory</div>
+            <div className="text-sm">Management</div>
+            <div className="text-sm">System</div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-8">
+          <ul className="flex items-center justify-center space-x-6">
+            {[
+              { to: '/inventory-management', icon: <MdInventory />, text: 'Inventory' },
+              { to: '/stock-level', icon: <MdStackedLineChart />, text: 'Stock Level' },
+              { to: '/orders', icon: <MdShoppingCart />, text: 'Orders' },
+              { to: '/delivery', icon: <MdLocalShipping />, text: 'Delivery' },
+              { to: '/usage-tracking', icon: <MdTrendingUp />, text: 'Usage' },
+              { to: '/wastage-loss', icon: <MdWarning />, text: 'Wastage' },
+              { to: '/reports', icon: <MdAnalytics />, text: 'Reports' },
+            ].map(({ to, icon, text }) => (
+              <li key={to}>
+                <Link 
+                  to={to}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200
+                    ${location.pathname === to 
+                      ? 'bg-white/20 text-white' 
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+                >
+                  {icon}
+                  <span className="text-sm font-medium">{text}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-4">
+          {userRole === 'Admin' && (
+            <Link 
+              to="/user-management"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200"
+            >
+              <MdPeople />
+              <span className="text-sm font-medium">Users</span>
+            </Link>
+          )}
+          <button
+            className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
+            onClick={onLogout}
+          >
+            <MdLogout />
+            <span className="text-sm font-medium">Login</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
