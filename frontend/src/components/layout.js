@@ -5,19 +5,18 @@ import Header from './header';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const showSidebar = location.pathname !== '/';
+  const hideLayoutPages = ['/', '/login', '/signup'];
+  const showSidebar = !hideLayoutPages.includes(location.pathname);
   const isRootPath = location.pathname === '/';
 
   return (
     <div className="min-h-screen">
       {/* Header */}
-      
-
       {isRootPath && (
-          <div className="fixed top-0 w-full h-15 z-50">
-            <Header />
-          </div>
-        )}
+        <div className="fixed top-0 w-full h-15 z-50">
+          <Header />
+        </div>
+      )}
 
       {/* Main Container */}
       <div className="flex">

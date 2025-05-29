@@ -67,13 +67,19 @@ const Header = ({ userRole, onLogout }) => {
               <span className="text-sm font-medium">Users</span>
             </Link>
           )}
-          <button
+          <Link
+            to="/signup"
             className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
-            onClick={onLogout}
+          >
+            <span className="text-sm font-medium">Sign Up</span>
+          </Link>
+          <Link
+            to="/login"
+            className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
           >
             <MdLogout />
             <span className="text-sm font-medium">Login</span>
-          </button>
+          </Link>
         </div>
       </div>
     </header>

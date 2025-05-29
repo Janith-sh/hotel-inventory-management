@@ -11,6 +11,8 @@ import NewUsageEntry from "./pages/newUsageEntry";
 import WastageLossTracking from "./pages/wastageLossTracking";
 import NewWastageEntry from "./pages/newWastageEntry";
 import ReportsAnalytics from "./pages/report";
+import Login from './pages/login';
+import Signup from './pages/signup';
 
 const AppRoutes = () => {
   return (
@@ -26,8 +28,8 @@ const AppRoutes = () => {
       <Route path="/wastage-loss" element={<WastageLossTracking />} />
       <Route path="/wastage/new" element={<NewWastageEntry />} />
       <Route path="/reports" element={<ReportsAnalytics />} />
-
-      
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
     </Routes>
   );
 };
