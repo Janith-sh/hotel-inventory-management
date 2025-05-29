@@ -1,8 +1,25 @@
 import React from "react";
 import { Bar, Pie } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, ArcElement } from "chart.js";
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  ArcElement,
+  Tooltip,
+  Legend 
+} from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ArcElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  ArcElement,
+  Tooltip,
+  Legend
+);
 
 const Dashboard = () => {
   const stockData = {
@@ -28,7 +45,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6 text-[#007BFF]">
+      <h1 className="text-3xl font-bold mb-6 text-[#1a237e] mt-6 ">
         Inventory Dashboard
       </h1>
 
