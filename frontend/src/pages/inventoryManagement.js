@@ -34,24 +34,33 @@ const InventoryManagement = () => {
   useEffect(() => {
     fetchInventory();
   }, []);
-
   const fetchInventory = async () => {
     try {
-      const response = await axios.get("/api/inventory");
+      // Get accessToken from localStorage using the correct key
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get("/api/inventory", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setInventoryData(response.data);
     } catch (error) {
       console.error("Error fetching inventory:", error);
     }
   };
-
   const handleAddItem = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('accessToken');
       await axios.post("/api/inventory", {
         name: newItem.name,
         category: newItem.category,
         department: newItem.department,
         threshold: parseInt(newItem.threshold),
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       // Refresh inventory data
@@ -74,15 +83,19 @@ const InventoryManagement = () => {
     setEditItem(item);
     setShowEditForm(true);
   };
-
   const handleUpdateItem = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('accessToken');
       await axios.put(`/api/inventory/${editItem._id}`, {
         name: editItem.name,
         category: editItem.category,
         department: editItem.department,
         threshold: parseInt(editItem.threshold),
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       fetchInventory();
       setShowEditForm(false);
@@ -91,11 +104,15 @@ const InventoryManagement = () => {
       console.error("Error updating item:", error);
     }
   };
-
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        await axios.delete(`/api/inventory/${id}`);
+        const token = localStorage.getItem('accessToken');
+        await axios.delete(`/api/inventory/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         fetchInventory(); // Refresh the list after deletion
       } catch (error) {
         console.error("Error deleting item:", error);
