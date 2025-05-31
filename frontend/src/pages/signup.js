@@ -42,7 +42,7 @@ const Signup = () => {
 
       setTokens(data.accessToken, data.refreshToken);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       setError(error.message);
     }
