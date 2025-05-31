@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   MdInventory,
   MdStackedLineChart,
@@ -12,8 +12,17 @@ import {
   MdLogout 
 } from 'react-icons/md';
 
-const Header = ({ userRole, onLogout }) => {
+const Header = ({ userRole }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   return (
     <header className="bg-gradient-to-r from-[#1a237e] to-[#283593] p-4 shadow-lg">
@@ -67,19 +76,34 @@ const Header = ({ userRole, onLogout }) => {
               <span className="text-sm font-medium">Users</span>
             </Link>
           )}
-          <Link
-            to="/signup"
-            className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
-          >
-            <span className="text-sm font-medium">Sign Up</span>
-          </Link>
-          <Link
-            to="/login"
-            className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
-          >
-            <MdLogout />
-            <span className="text-sm font-medium">Login</span>
-          </Link>
+          {user ? (
+            <>
+              <span className="text-white text-sm font-medium">Welcome, {user.name}</span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200"
+              >
+                <MdLogout />
+                <span className="text-sm font-medium">Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/signup"
+                className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
+              >
+                <span className="text-sm font-medium">Sign Up</span>
+              </Link>
+              <Link
+                to="/login"
+                className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
+              >
+                <MdLogout />
+                <span className="text-sm font-medium">Login</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
