@@ -1,43 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const StockLevelMonitoring = () => {
-  const [inventoryData, setInventoryData] = useState([
-    {
-      id: 1,
-      name: "Toothpaste",
-      category: "Consumable",
-      department: "Housekeeping",
-      stockLevel: 12,
-      threshold: 20,
-    },
-    {
-      id: 2,
-      name: "Rice",
-      category: "Perishable Goods",
-      department: "Kitchen",
-      stockLevel: 50,
-      threshold: 100,
-    },
-    {
-      id: 3,
-      name: "Bedsheet",
-      category: "Fixed Asset",
-      department: "Housekeeping",
-      stockLevel: 30,
-      threshold: 10,
-    },
-    {
-      id: 4,
-      name: "Cleaning Spray",
-      category: "Consumable",
-      department: "Housekeeping",
-      stockLevel: 5,
-      threshold: 15,
-    },
-  ]);
-
+  const [inventoryData, setInventoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+  const [error, setError] = useState(null);
+
+  // Fetch inventory data from the API
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get accessToken from localStorage using the correct key
+        const token = localStorage.getItem('accessToken');
+        const response = await axios.get("/api/inventory", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log("Inventory data fetched successfully");
+        setInventoryData(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching inventory data:", error);
+        setError("Failed to load inventory data");
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, []);
 
   const getStatus = (stockLevel, threshold) => {
     if (stockLevel >= threshold) return "OK";
@@ -45,7 +43,38 @@ const StockLevelMonitoring = () => {
     return "Critical";
   };
 
-  const filteredData = inventoryData.filter((item) => {
+  // Sorting logic
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Apply sorting
+  const sortedData = [...inventoryData].sort((a, b) => {
+    if (sortConfig.key) {
+      const direction = sortConfig.direction === 'ascending' ? 1 : -1;
+      
+      if (sortConfig.key === 'status') {
+        const statusA = getStatus(a.stockLevel, a.threshold);
+        const statusB = getStatus(b.stockLevel, b.threshold);
+        return statusA.localeCompare(statusB) * direction;
+      }
+      
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return -1 * direction;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return 1 * direction;
+      }
+    }
+    return 0;
+  });
+
+  // Apply filtering and searching
+  const filteredData = sortedData.filter((item) => {
     const status = getStatus(item.stockLevel, item.threshold);
     const matchesFilter =
       filter === "all" ||
@@ -62,6 +91,13 @@ const StockLevelMonitoring = () => {
       <h1 className="text-3xl font-bold mb-6 text-[#283593]">
         Stock Level Monitoring
       </h1>
+
+      {/* Display Error Message */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{error}</p>
+        </div>
+      )}
 
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
@@ -103,55 +139,71 @@ const StockLevelMonitoring = () => {
 
       {/* Inventory Table */}
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr className="bg-[#283593] text-white">
-                <th className="py-2 px-4 text-left">Item Name</th>
-                <th className="py-2 px-4 text-left">Category</th>
-                <th className="py-2 px-4 text-left">Department</th>
-                <th className="py-2 px-4 text-left">Stock Level</th>
-                <th className="py-2 px-4 text-left">Threshold</th>
-                <th className="py-2 px-4 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item) => {
-                const status = getStatus(item.stockLevel, item.threshold);
-                return (
-                  <tr key={item.id} className="border-t">
-                    <td className="py-2 px-4">{item.name}</td>
-                    <td className="py-2 px-4">{item.category}</td>
-                    <td className="py-2 px-4">{item.department}</td>
-                    <td className="py-2 px-4">{item.stockLevel}</td>
-                    <td className="py-2 px-4">{item.threshold}</td>
+        {loading ? (
+          <div className="text-center py-4">Loading...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-[#283593] text-white">
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('name')}>
+                    Item Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('category')}>
+                    Category {sortConfig.key === 'category' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('department')}>
+                    Department {sortConfig.key === 'department' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('stockLevel')}>
+                    Stock Level {sortConfig.key === 'stockLevel' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('threshold')}>
+                    Threshold {sortConfig.key === 'threshold' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                  <th className="py-2 px-4 text-left cursor-pointer" onClick={() => requestSort('status')}>
+                    Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.map((item) => {
+                  const status = getStatus(item.stockLevel, item.threshold);
+                  return (
+                    <tr key={item._id} className="border-t">
+                      <td className="py-2 px-4">{item.name}</td>
+                      <td className="py-2 px-4">{item.category}</td>
+                      <td className="py-2 px-4">{item.department}</td>
+                      <td className="py-2 px-4">{item.stockLevel}</td>
+                      <td className="py-2 px-4">{item.threshold}</td>
+                      <td
+                        className={`py-2 px-4 font-semibold ${
+                          status === "OK"
+                            ? "text-green-600"
+                            : status === "Low Stock"
+                            ? "text-orange-500"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {status}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredData.length === 0 && (
+                  <tr>
                     <td
-                      className={`py-2 px-4 font-semibold ${
-                        status === "OK"
-                          ? "text-green-600"
-                          : status === "Low Stock"
-                          ? "text-orange-500"
-                          : "text-red-600"
-                      }`}
+                      colSpan={6}
+                      className="text-center py-4 text-gray-500 font-semibold"
                     >
-                      {status}
+                      No items found.
                     </td>
                   </tr>
-                );
-              })}
-              {filteredData.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="text-center py-4 text-gray-500 font-semibold"
-                  >
-                    No items found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

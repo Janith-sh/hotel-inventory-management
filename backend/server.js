@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const stockLevelRoutes = require('./routes/stockLevelRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 dotenv.config();
 
@@ -30,8 +31,9 @@ mongoose.connection.once('open', () => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/stock-levels', stockLevelRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
