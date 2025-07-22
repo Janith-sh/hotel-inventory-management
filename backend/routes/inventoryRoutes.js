@@ -105,4 +105,14 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// Get all inventory items (public)
+router.get('/all', async (req, res) => {
+    try {
+        const inventoryItems = await Inventory.find().select('name currentStock minimumStock unitPrice');
+        res.json(inventoryItems);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

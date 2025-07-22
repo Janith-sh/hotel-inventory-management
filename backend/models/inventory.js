@@ -17,9 +17,17 @@ const inventorySchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    currentStock: {
+        type: Number,
+        default: 0
+    },
     threshold: {
         type: Number,
         required: true
+    },
+    unitPrice: {
+        type: Number,
+        default: 0
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

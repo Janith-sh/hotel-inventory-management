@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const stockLevelRoutes = require('./routes/stockLevelRoutes');
 const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ mongoose.connection.once('open', () => {
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/stock-levels', stockLevelRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
