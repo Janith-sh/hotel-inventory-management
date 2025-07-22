@@ -14,9 +14,23 @@ router.get('/dashboard-stats', async (req, res) => {
     try {
         const userId = req.user.id || req.user._id;
         
-        // Get total stock
+        // Get total stock and inventory summary
         const inventoryItems = await Inventory.find({ user: userId });
         const totalStock = inventoryItems.reduce((sum, item) => sum + (item.currentStock || 0), 0);
+        const totalItems = inventoryItems.length;
+        
+        // Count low stock and critical stock items
+        const lowStockItems = inventoryItems.filter(item => {
+            const current = item.currentStock || 0;
+            const threshold = item.threshold || 0;
+            return current < threshold && current >= threshold * 0.5;
+        }).length;
+        
+        const criticalStockItems = inventoryItems.filter(item => {
+            const current = item.currentStock || 0;
+            const threshold = item.threshold || 0;
+            return current < threshold * 0.5;
+        }).length;
         
         // Get current month usage
         const currentMonth = new Date();
@@ -39,11 +53,26 @@ router.get('/dashboard-stats', async (req, res) => {
         // Calculate wastage rate
         const wastageRate = totalMonthlyUsage > 0 ? ((totalMonthlyWastage / totalMonthlyUsage) * 100).toFixed(1) : 0;
         
+        // Get recent orders summary
+        const recentOrders = await Order.find({ 
+            user: userId,
+            orderDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
+        });
+        
+        const pendingOrders = recentOrders.filter(order => order.status === 'Pending').length;
+        const completedOrders = recentOrders.filter(order => order.status === 'Complete').length;
+        
         res.json({
             totalStock,
+            totalItems,
+            lowStockItems,
+            criticalStockItems,
             monthlyUsage: totalMonthlyUsage,
             monthlyWastage: totalMonthlyWastage,
-            wastageRate: parseFloat(wastageRate)
+            wastageRate: parseFloat(wastageRate),
+            pendingOrders,
+            completedOrders,
+            recentOrdersCount: recentOrders.length
         });
     } catch (error) {
         console.error('Dashboard stats error:', error.message);
