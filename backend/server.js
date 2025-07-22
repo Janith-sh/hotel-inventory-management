@@ -6,6 +6,8 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const stockLevelRoutes = require('./routes/stockLevelRoutes');
 const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const usageRoutes = require('./routes/usageRoutes');
+const wastageRoutes = require('./routes/wastageRoutes');
 
 dotenv.config();
 
@@ -36,6 +38,8 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/stock-levels', stockLevelRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/usage', usageRoutes);
+app.use('/api/wastage', wastageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
