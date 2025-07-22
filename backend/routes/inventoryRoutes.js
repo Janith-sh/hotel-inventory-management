@@ -115,4 +115,93 @@ router.get('/all', async (req, res) => {
     }
 });
 
+// Update inventory stock levels
+router.put('/:id/stock', async (req, res) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const { addQuantity, setQuantity, reason } = req.body;
+        
+        // Find the inventory item and make sure it belongs to the user
+        const item = await Inventory.findOne({ _id: req.params.id, user: userId });
+        
+        if (!item) {
+            return res.status(404).json({ message: "Inventory item not found" });
+        }
+        
+        const previousStock = item.currentStock || 0;
+        let newStock;
+        
+        if (typeof setQuantity !== 'undefined') {
+            // Set absolute stock level
+            newStock = Math.max(0, setQuantity);
+        } else if (typeof addQuantity !== 'undefined') {
+            // Add/subtract from current stock
+            newStock = Math.max(0, previousStock + addQuantity);
+        } else {
+            return res.status(400).json({ message: "Either 'addQuantity' or 'setQuantity' must be provided" });
+        }
+        
+        // Update both stock fields
+        item.currentStock = newStock;
+        item.stockLevel = newStock;
+        
+        await item.save();
+        
+        console.log(`Stock update for ${item.name}:`);
+        console.log(`- Reason: ${reason || 'Stock adjustment'}`);
+        console.log(`- Stock: ${previousStock} → ${newStock}`);
+        
+        res.json({
+            message: 'Stock updated successfully',
+            item: item.name,
+            previousStock,
+            newStock,
+            change: newStock - previousStock
+        });
+    } catch (error) {
+        console.error('Update inventory stock error:', error.message);
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Get inventory with order history for better stock tracking
+router.get('/:id/details', async (req, res) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const Order = require('../models/Order');
+        
+        // Find the inventory item
+        const item = await Inventory.findOne({ _id: req.params.id, user: userId });
+        
+        if (!item) {
+            return res.status(404).json({ message: "Inventory item not found" });
+        }
+        
+        // Find related orders
+        const orders = await Order.find({ inventoryItem: req.params.id })
+            .select('orderId quantity receivedQuantity status orderDate deliveryDate')
+            .sort({ orderDate: -1 });
+        
+        // Calculate total ordered vs received
+        const totalOrdered = orders.reduce((sum, order) => sum + order.quantity, 0);
+        const totalReceived = orders.reduce((sum, order) => sum + (order.receivedQuantity || 0), 0);
+        
+        res.json({
+            item: item.toObject(),
+            orderHistory: orders,
+            stockSummary: {
+                currentStock: item.currentStock || 0,
+                stockLevel: item.stockLevel || 0,
+                threshold: item.threshold,
+                totalOrdered,
+                totalReceived,
+                pendingDelivery: totalOrdered - totalReceived
+            }
+        });
+    } catch (error) {
+        console.error('Get inventory details error:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

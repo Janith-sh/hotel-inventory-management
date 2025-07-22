@@ -78,7 +78,7 @@ const OrderManagement = () => {
         <div className="flex gap-2">
           <button
             className={`px-4 py-2 rounded-lg ${
-              filter === "all" ? "bg-[##283593] text-white" : "bg-gray-200"
+              filter === "all" ? "bg-[#283593] text-white" : "bg-gray-200"
             }`}
             onClick={() => setFilter("all")}
           >
@@ -94,11 +94,11 @@ const OrderManagement = () => {
           </button>
           <button
             className={`px-4 py-2 rounded-lg ${
-              filter === "delivered" ? "bg-green-500 text-white" : "bg-gray-200"
+              filter === "complete" ? "bg-green-500 text-white" : "bg-gray-200"
             }`}
-            onClick={() => setFilter("delivered")}
+            onClick={() => setFilter("complete")}
           >
-            Delivered
+            Complete
           </button>
           <button
             className={`px-4 py-2 rounded-lg ${
@@ -149,8 +149,10 @@ const OrderManagement = () => {
                       className={`py-2 px-4 font-semibold ${
                         order.status === "Pending"
                           ? "text-blue-600"
-                          : order.status === "Delivered"
+                          : order.status === "Complete"
                           ? "text-green-600"
+                          : order.status === "Partial"
+                          ? "text-yellow-600"
                           : "text-red-600"
                       }`}
                     >
