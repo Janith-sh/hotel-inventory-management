@@ -176,16 +176,23 @@ const ReportsAnalytics = () => {
 
     switch (reportType) {
       case 'Stock Report':
+        // eslint-disable-next-line no-unused-vars
         yPosition = generateStockReportPDF(pdf, data, yPosition);
         break;
       case 'Usage Report':
+        // eslint-disable-next-line no-unused-vars
         yPosition = generateUsageReportPDF(pdf, data, yPosition);
         break;
       case 'Wastage Report':
+        // eslint-disable-next-line no-unused-vars
         yPosition = generateWastageReportPDF(pdf, data, yPosition);
         break;
       case 'Supplier Performance Report':
+        // eslint-disable-next-line no-unused-vars
         yPosition = generateSupplierReportPDF(pdf, data, yPosition);
+        break;
+      default:
+        console.warn(`Unknown report type: ${reportType}`);
         break;
     }
 

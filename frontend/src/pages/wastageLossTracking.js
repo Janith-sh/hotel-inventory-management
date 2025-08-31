@@ -36,7 +36,6 @@ const WastageLossTracking = () => {
 
   // Calculate stats from actual data
   const departments = [...new Set(wastageRecords.map(record => record.department))];
-  const reasons = [...new Set(wastageRecords.map(record => record.wastageReason))];
   
   // Get top 3 reasons
   const reasonCounts = {};

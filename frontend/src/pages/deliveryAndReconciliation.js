@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaBoxOpen, FaCheck, FaHourglassHalf, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
 const DeliveryReconciliation = () => {
-  const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
