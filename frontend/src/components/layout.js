@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sidebar, Header } from './';
+import Sidebar from './sidebar';
+import Header from './header';
 
 const Layout = ({ children }) => {
   const location = useLocation();
