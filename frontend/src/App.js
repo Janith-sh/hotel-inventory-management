@@ -1,7 +1,7 @@
 // App.js  
 import React from 'react';  
 import { BrowserRouter } from 'react-router-dom';
-import Layout from './components/Layout';  
+import Layout from './components/layout';  
 import AppRoutes from './routes';
 
 function App() {  
