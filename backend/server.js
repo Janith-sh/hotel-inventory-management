@@ -36,6 +36,23 @@ mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB successfully');
 });
 
+// Health check route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Shan Hotel Inventory Management API is running!', 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    service: 'Shan Hotel Inventory Management API',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/stock-levels', stockLevelRoutes);
