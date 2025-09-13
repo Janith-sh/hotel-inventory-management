@@ -1,28 +1,129 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const NewOrderForm = () => {
   const navigate = useNavigate();
-
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [orderData, setOrderData] = useState({
+    inventoryItem: "",
     supplier: "",
-    item: "",
     quantity: "",
     expectedDeliveryDate: "",
-  });
+    unitPrice: "",
+    totalPrice: 0,
+  });  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get token from localStorage
+        const token = localStorage.getItem('accessToken');
+        
+        const response = await axios.get("/api/inventory", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.data) {
+          setInventoryItems(response.data);
+          console.log("Loaded inventory items:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching inventory items:", error);
+        setError("Failed to load inventory items. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleChange = (e) => {
-    setOrderData({ ...orderData, [e.target.name]: e.target.value });
+    fetchInventoryItems();
+  }, []);
+  const handleInventoryItemChange = (e) => {
+    const selectedItem = inventoryItems.find(
+      (item) => item._id === e.target.value
+    );
+    setOrderData((prev) => ({
+      ...prev,
+      inventoryItem: e.target.value,
+      // Keep the existing unitPrice or set it from the selected item if available
+      unitPrice: selectedItem?.unitPrice || prev.unitPrice || "",
+      // Store the item name for reference
+      itemName: selectedItem ? selectedItem.name : "",
+    }));
+    
+    console.log("Selected item:", selectedItem);
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setOrderData((prev) => {
+      const newData = { ...prev, [name]: value };
+      // Calculate total price when quantity or unit price changes
+      if (name === "quantity" || name === "unitPrice") {
+        newData.totalPrice = newData.quantity * newData.unitPrice;
+      }
+      return newData;
+    });
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("New Order Data:", orderData);
+    try {
+      // Validate form data
+      if (!orderData.inventoryItem || !orderData.supplier || !orderData.quantity || 
+          !orderData.unitPrice || !orderData.expectedDeliveryDate) {
+        alert("Please fill all required fields");
+        return;
+      }
 
-    // Here you would normally send the orderData to your backend API
-
-    // After submitting, navigate back to the orders page
-    navigate("/orders");
+      // Get token from localStorage
+      const token = localStorage.getItem('accessToken');
+      
+      // Generate a unique order ID (timestamp + random number)
+      const timestamp = new Date().getTime();
+      const randomNum = Math.floor(Math.random() * 1000);
+      const orderId = `ORD-${timestamp}-${randomNum}`;
+      
+      // Make sure quantity and prices are numbers
+      const quantity = Number(orderData.quantity);
+      const unitPrice = Number(orderData.unitPrice);
+      const totalPrice = quantity * unitPrice;
+      
+      // Format the data for submission
+      const orderPayload = {
+        orderId,
+        inventoryItem: orderData.inventoryItem,
+        supplier: orderData.supplier,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        totalPrice: totalPrice,
+        status: 'Pending',
+        orderDate: new Date(),
+        expectedDeliveryDate: new Date(orderData.expectedDeliveryDate),
+        itemName: orderData.itemName // Send the item name for display purposes
+      };
+      
+      console.log("Submitting order payload:", orderPayload);
+      
+      // Submit the order with authorization header
+      const response = await axios.post("/api/orders", orderPayload, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log("Order created successfully:", response.data);
+      
+      // Show success message and navigate to orders page
+      alert("Order created successfully!");
+      navigate("/orders");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Error creating order: " + (error.response?.data?.message || error.message));
+    }
   };
 
   return (
@@ -34,7 +135,33 @@ const NewOrderForm = () => {
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-md max-w-xl mx-auto"
-      >
+      >        <div className="mb-4">
+          <label className="block text-[#4B5563] font-semibold mb-2">Item</label>
+          {loading ? (
+            <div className="border p-2 rounded-lg w-full bg-gray-100 text-center">Loading items...</div>
+          ) : error ? (
+            <div className="border p-2 rounded-lg w-full bg-red-100 text-red-700 text-center">{error}</div>
+          ) : (
+            <select
+              name="inventoryItem"
+              value={orderData.inventoryItem}
+              onChange={handleInventoryItemChange}
+              required
+              className="border p-2 rounded-lg w-full"
+            >
+              <option value="">Select Inventory Item</option>
+              {inventoryItems.map((item) => (
+                <option key={item._id} value={item._id}>
+                  {item.name} (Current Stock: {item.stockLevel || 0}) - {item.category}
+                </option>
+              ))}
+            </select>
+          )}
+          {inventoryItems.length === 0 && !loading && !error && (
+            <p className="text-sm text-yellow-600 mt-1">No inventory items found. You might need to add items first.</p>
+          )}
+        </div>
+
         <div className="mb-4">
           <label className="block text-[#4B5563] font-semibold mb-2">
             Supplier Name
@@ -52,16 +179,18 @@ const NewOrderForm = () => {
 
         <div className="mb-4">
           <label className="block text-[#4B5563] font-semibold mb-2">
-            Item Name
+            Unit Price
           </label>
           <input
-            type="text"
-            name="item"
-            value={orderData.item}
+            type="number"
+            name="unitPrice"
+            value={orderData.unitPrice}
             onChange={handleChange}
             required
             className="border p-2 rounded-lg w-full"
-            placeholder="Enter Item Name"
+            placeholder="Enter Unit Price"
+            min={0}
+            step="0.01"
           />
         </div>
 
@@ -78,6 +207,18 @@ const NewOrderForm = () => {
             className="border p-2 rounded-lg w-full"
             placeholder="Enter Quantity"
             min={1}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-[#4B5563] font-semibold mb-2">
+            Total Price
+          </label>
+          <input
+            type="number"
+            value={orderData.totalPrice}
+            className="border p-2 rounded-lg w-full bg-gray-100"
+            disabled
           />
         </div>
 
