@@ -1,6 +1,6 @@
 import { getTokens, refreshTokens, clearTokens } from './auth';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://janith-backend-bd5ce66c4d8a.herokuapp.com/';
 
 // Helper function to make authenticated API calls
 export const apiCall = async (endpoint, options = {}) => {
