@@ -1,6 +1,7 @@
 import { getTokens, refreshTokens, clearTokens } from './auth';
 
-const BASE_URL = 'http://localhost:5000/api';
+// Use env-configured API base URL in production deployments
+const BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000') + '/api';
 
 // Helper function to make authenticated API calls
 export const apiCall = async (endpoint, options = {}) => {

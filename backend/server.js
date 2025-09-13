@@ -16,12 +16,31 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || 'https://your-frontend-domain.com'
-    : 'http://localhost:3000',
-  credentials: true
-}));
+
+// CORS configuration
+// Allow specific origins only. Set FRONTEND_URL (and optionally FRONTEND_URL_2) in env for production.
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_2,
+  // Always allow CRA dev server locally
+  'http://localhost:3000'
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow non-browser or same-origin requests where origin may be undefined
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+// Enable preflight across-the-board
+app.options('*', cors(corsOptions));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
