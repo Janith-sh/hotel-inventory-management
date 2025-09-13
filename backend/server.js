@@ -17,7 +17,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000', // React frontend URL
+  origin: 'https://your-azure-frontend-url.azurewebsites.net', // Replace with your actual Azure URL
   credentials: true
 }));
 
