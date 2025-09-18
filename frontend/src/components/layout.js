@@ -5,7 +5,7 @@ import Header from './header';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideLayoutPages = ['/', '/login', '/signup'];
+  const hideLayoutPages = ['/', '/dashboard', '/login', '/signup'];
   const showSidebar = !hideLayoutPages.includes(location.pathname);
   const isRootPath = location.pathname === '/';
 

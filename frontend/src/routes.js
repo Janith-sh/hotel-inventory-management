@@ -18,6 +18,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/inventory-management" element={<InventoryManagement />} />
       <Route path="/stock-level" element={<StockLevel />} />
       <Route path="/orders" element={<OrderManagement />} />
